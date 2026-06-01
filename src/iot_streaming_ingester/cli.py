@@ -1,6 +1,7 @@
 # src/base_python_project/cli.py
 import argparse
 import sys
+import asyncio
 
 from .main import run
 
@@ -12,7 +13,7 @@ def parse_args(args: list[str]) -> argparse.Namespace:
 
 def main() -> None:
     _ = parse_args(sys.argv[1:])
-    run()
+    asyncio.run(run())
 
 
 if __name__ == "__main__":
