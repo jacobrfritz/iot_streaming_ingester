@@ -1,22 +1,4 @@
-# base_python_project
-
-A robust default Python project template using `uv`.
-
-## Setup
-
-This project uses `uv` for dependency management and includes a bootstrapping script to quickly get you started.
-
-To bootstrap the project, run:
-
-```bash
-python bootstrap.py
-```
-
-The bootstrap script will:
-- **Check for `uv`**: Automatically installs [uv](https://github.com/astral-sh/uv) if it's not already on your system.
-- **Rename Project**: Guides you through renaming the project and its Python package from the default `base_python_project`.
-- **Sync Dependencies**: Installs project dependencies and allows you to select optional extras (e.g., `data`, `ml`, `api`).
-- **Reset Git**: Optionally clears the template's git history and initializes a new repository for your project.
+# iot_streaming_simulator
 
 ## Usage
 
