@@ -69,8 +69,8 @@ class RedisConnector(Connector):
         self,
         messages: list[str]
     ):
-        for message_id in messages:
-            await self.ack(message_id)
+        if messages:
+            await self.r.xack(self.stream_name, self.group, *messages)
     
     async def get_pending_messages(
         self,
