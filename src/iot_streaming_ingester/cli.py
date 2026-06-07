@@ -13,7 +13,11 @@ def parse_args(args: list[str]) -> argparse.Namespace:
 
 def main() -> None:
     _ = parse_args(sys.argv[1:])
-    asyncio.run(run())
+    try:
+        asyncio.run(run())
+    except KeyboardInterrupt:
+        print("\nProgram interrupted by user. Exiting cleanly.", file=sys.stderr)
+        sys.exit(0)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,22 @@
-# src/base_python_project/main.py
+import asyncio
+
 from iot_streaming_ingester.connector import RedisConnector
+from iot_streaming_ingester.worker_manager import WorkerManager
 from iot_streaming_ingester.worker import Worker
 
-
 async def run() -> None:
-    conn = RedisConnector()
-    await conn.create_group_if_not_exists()
+    try:
+        conn = RedisConnector()
+        await conn.create_group_if_not_exists()
+        worker_manager = WorkerManager()
+        workers = [worker_manager.create_worker(conn, 100, Worker) for _ in range(2)]
 
-    worker = Worker(conn, 10)
-    async for message in worker.run(10):
-        print(message)
+        tasks = [worker_manager.worker_process(worker, conn) for worker in workers]
+        await asyncio.gather(*tasks)
+        
+    except asyncio.CancelledError:
+        print("Shutdown signal received. Cancelling worker tasks...")
+    finally:
+        print("Closing database and Redis connections...")
+        await conn.r.close() 
+        print("Shutdown complete.")
