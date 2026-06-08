@@ -5,7 +5,7 @@ from typing import Protocol
 """
 
 class Measurement(Protocol): 
-    def measure(self): ...
+    def measure(self, window:list[dict]): ...
 
 class EventsPerSecondMeasurement(Measurement):
     def measure(self, window:list[dict]):
