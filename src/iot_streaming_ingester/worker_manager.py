@@ -1,25 +1,15 @@
-from .worker import Worker
+from datetime import datetime
 import time
 
-class WorkerManager:
-    def create_worker(self, conn, max_message_count, worker:Worker):
-        return Worker(conn, max_message_count)
-    
-    def worker_offline(self, worker:type[Worker]):
-        """
-        Worker stops emitting events to simulate going offline
-        """
-        ...
-        
-    def worker_online(self, worker:type[Worker]):
-        """
-        Worker start emitting events to simulate going coming back online
-        """
-        ...
-        
-    import time
+from .worker import Worker
+from.measurement import Measurement
 
-    async def worker_process(self, worker: Worker, conn):
+
+class WorkerManager:
+    def create_worker(self, conn, max_message_count, worker:type[Worker]):
+        return worker(conn, max_message_count)
+    
+    async def worker_process(self, worker: Worker, conn, measurements:list[Measurement]):
         total_processed = 0
         last_report_time = time.time()
         
@@ -27,18 +17,20 @@ class WorkerManager:
             start_time = time.time()  # 1. Capture the start time here!
             
             parsed = {event[0]: event[1] for event in message}
+            out = []
+            for stream_id, inner_dict in parsed.items():
+                flattened_data = {'stream_id': stream_id, 'receipt_time': datetime.now().isoformat(), **inner_dict}
+                out.append(flattened_data)
+            
             total_processed += len(parsed)
-            
-            await conn.acknowledge_messages(list(parsed.keys()))
-            
-            # Report throughput once per second
-            now = time.time()
-            if now - last_report_time >= 1.0:
-                rate = total_processed / (now - last_report_time)
+            if start_time - last_report_time >= 1.0:
+                rate = total_processed / (start_time - last_report_time)
                 print(f"Throughput: {rate:.2f} msgs/sec (Processed: {total_processed})")
                 total_processed = 0
-                last_report_time = now
-                
-            loop_duration = time.time() - start_time  # 2. Compare against start_time
-            if loop_duration > 0.05: 
-                print(f"⚠️ Micro-hitch detected: Batch of {len(parsed)} took {loop_duration*1000:.1f}ms")
+                last_report_time = start_time
+            
+            metrics = [measure.measure(out) for measure in measurements]
+            
+            if metrics:
+                print(metrics)
+            await conn.acknowledge_messages(list(parsed.keys()))

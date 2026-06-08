@@ -5,11 +5,21 @@ from typing import Protocol
 """
 
 class Measurement(Protocol): 
-    def measure(self, window): ...
+    def measure(self): ...
 
-
-
-
+class EventsPerSecondMeasurement(Measurement):
+    def measure(self, window:list[dict]):
+        num_events = len(window)
+        dates = [event['receipt_time'] for event in window]
+        print(min(dates))
+        print(max(dates) - min(dates))
+        
+class Mean(Measurement):
+    def measure(self, window:list[dict]):
+        n = len(window)
+        # s = sum(window)
+        # print(f'number of events {n}')
+        # print(f'total {s}')
 
 
 """
